@@ -1,9 +1,9 @@
 import { useEffect } from "react";
-import HeroSection from "../components/inicio/HeroSection";
-import Caracteristicas from "../components/inicio/Caracteristicas";
-import CTASection from "../components/inicio/CTASection";
-import PreguntasFrecuentes from "../components/inicio/PreguntasFrecuentes";
-import ReseñasDestacadas from "../components/inicio/ReseñasDestacadas";
+import HeroSection from "../components/Inicio/HeroSection";
+import Caracteristicas from "../components/Inicio/Caracteristicas";
+import CTASection from "../components/Inicio/CTASection";
+import PreguntasFrecuentes from "../components/Inicio/PreguntasFrecuentes";
+import ReseñasDestacadas from "../components/Inicio/ReseñasDestacadas";
 
 const Inicio = () => {
   useEffect(() => {
