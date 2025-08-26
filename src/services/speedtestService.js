@@ -1,15 +1,9 @@
 // src/services/speedtestService.js
 
-// Base del backend (sin slash final)
 const BASE = (import.meta.env.VITE_SPEEDTEST_API_URL || "").replace(/\/+$/, "");
-
-// Endpoints
 const HEALTH_URL = `${BASE}/health`;
 const SPEEDTEST_URL = `${BASE}/api/speedtest`;
 
-/**
- * Ping liviano para “despertar” el server en Render.
- */
 async function wakeBackend() {
   try {
     const r = await fetch(HEALTH_URL, { method: "GET", cache: "no-store" });
@@ -19,31 +13,19 @@ async function wakeBackend() {
   }
 }
 
-/**
- * Fetch con timeout (AbortController)
- */
-async function fetchWithTimeout(url, { timeoutMs = 60000, ...opts } = {}) {
+async function fetchWithTimeout(url, { timeoutMs = 45000, ...opts } = {}) {
   const ctrl = new AbortController();
   const id = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    const res = await fetch(url, { ...opts, signal: ctrl.signal });
-    return res;
+    return await fetch(url, { ...opts, signal: ctrl.signal });
   } finally {
     clearTimeout(id);
   }
 }
 
-/**
- * Ejecuta el speedtest en el backend.
- * - Despierta el server
- * - Llama al endpoint real
- * - Reintenta 1 vez en 502/503/504 o error de red
- */
-export async function ejecutarSpeedtest({ timeoutMs = 60000 } = {}) {
-  // 1) Wake-up (no falla si no responde)
+export async function ejecutarSpeedtest({ timeoutMs = 45000 } = {}) {
   await wakeBackend();
 
-  // 2) Primer intento
   let res;
   try {
     res = await fetchWithTimeout(SPEEDTEST_URL, {
@@ -51,14 +33,12 @@ export async function ejecutarSpeedtest({ timeoutMs = 60000 } = {}) {
       headers: { Accept: "application/json" },
       cache: "no-store",
     });
-  } catch (e) {
-    // Reintento si fallo de red/timeout
+  } catch {
     res = null;
   }
 
-  // 3) Si falló o vino 502/503/504, reintento rápido
   if (!res || [502, 503, 504].includes(res.status)) {
-    await new Promise(r => setTimeout(r, 1200));
+    await new Promise(r => setTimeout(r, 3000)); // backoff 3s
     res = await fetchWithTimeout(SPEEDTEST_URL, {
       timeoutMs,
       headers: { Accept: "application/json" },
@@ -66,13 +46,11 @@ export async function ejecutarSpeedtest({ timeoutMs = 60000 } = {}) {
     });
   }
 
-  // 4) Manejo de error HTTP
   if (!res.ok) {
     const txt = await res.text().catch(() => "");
     throw new Error(`Error HTTP ${res.status} ${txt || ""}`.trim());
   }
 
-  // 5) Parseo
   try {
     return await res.json();
   } catch {
