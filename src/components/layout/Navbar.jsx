@@ -1,0 +1,393 @@
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
+import Logo from "../../icons/logotipo/imagotipo";
+import {
+  IconX,
+  IconBell,
+  IconBellFilled,
+  IconSun,
+  IconMoon,
+  IconChevronDown,
+} from "@tabler/icons-react";
+import { obtenerNotificacionesBoletas } from "../../services/boletas/notificaciones";
+import MainButton from "../ui/MainButton";
+import MainLinkButton from "../ui/MainLinkButton";
+import { logoutUser } from "../../services/authService";
+
+export const useNotificaciones = () => {
+  const { usuario } = useAuth();
+  const [notificaciones, setNotificaciones] = useState([]);
+
+  const cargarNotificaciones = async () => {
+    if (!usuario) return;
+    const alertas = await obtenerNotificacionesBoletas(usuario.id);
+    setNotificaciones(alertas);
+  };
+
+  useEffect(() => {
+    cargarNotificaciones();
+    const handler = () => cargarNotificaciones();
+
+    window.addEventListener("nueva-boleta", handler);
+    return () => window.removeEventListener("nueva-boleta", handler);
+  }, [usuario]);
+
+  return { notificaciones, setNotificaciones, cargarNotificaciones };
+};
+
+const Navbar = () => {
+  const [mostrarNotis, setMostrarNotis] = useState(false);
+  const [mostrarHerramientas, setMostrarHerramientas] = useState(false);
+  const { usuario, loading } = useAuth();
+  const { notificaciones, setNotificaciones } = useNotificaciones();
+  const { currentTheme, changeTheme, themeData } = useTheme();
+  const location = useLocation();
+  const esVistaMapa = location.pathname === "/mapa";
+
+  const [authInteract, setAuthInteract] = useState(null); // 'login' | 'register' | null
+
+  // Función para obtener el color principal del logo según el tema
+  const getLogoColorPrincipal = () => {
+    if (currentTheme === "light") {
+      return "#1f2a40"; // Secundario del tema dark
+    }
+    return themeData?.texto || "#FFFFFF";
+  };
+
+  const openOnly = (menu) => {
+    setMostrarHerramientas(menu === "tools");
+    setMostrarNotis(menu === "notis");
+  };
+
+  const getThemeIcon = () => {
+    return currentTheme === "light" ? IconSun : IconMoon;
+  };
+
+  const toggleTheme = () => {
+    const nextTheme = currentTheme === "light" ? "dark" : "light";
+    changeTheme(nextTheme);
+  };
+
+  // Helper de ruta activa
+  const isActive = (path) => location.pathname.startsWith(path);
+
+  // Clases base
+  const registerBase =
+    "px-3 py-1 transition-all hover:scale-105 border font-semibold rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-acento/50";
+  const registerTheme =
+    currentTheme === "light"
+      ? "bg-white text-acento border-acento hover:bg-acento hover:text-white"
+      : "bg-fondo text-acento border-acento hover:bg-acento hover:text-white";
+  const registerDim = authInteract === "login" ? "opacity-70" : "opacity-100";
+
+  const loginBase =
+    "px-3 py-1 transition-all hover:scale-105 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-acento/50";
+  const loginDim = authInteract === "register" ? "opacity-80" : "opacity-100";
+
+  const activeFilled =
+    "bg-acento text-white border border-acento shadow-sm ring-2 ring-acento/40";
+  const outlineByTheme = currentTheme === "light" ? "bg-white" : "bg-fondo";
+
+  return (
+    <>
+      {/* Desktop Navbar */}
+      <nav
+        className={`hidden lg:block px-4 py-4 ${
+          currentTheme === "light"
+            ? "bg-fondo shadow-lg border-b border-texto/15"
+            : "bg-fondo shadow-lg border-b border-texto/15"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto flex justify-between items-center relative">
+          <Link to="/" className="flex items-center gap-2">
+            <Logo
+              className="h-10"
+              colorPrincipal={getLogoColorPrincipal()}
+              colorAcento={themeData?.acento || "#FB8531"}
+            />
+          </Link>
+
+          <div className="flex items-center space-x-4">
+            {/* Navigation Links usando MainLinkButton */}
+            <MainLinkButton to="/" variant="navbar" className="!px-4 !py-2">
+              Inicio
+            </MainLinkButton>
+
+            {/* Herramientas (Dropdown) */}
+            <div className="relative">
+              <MainButton
+                onClick={() => {
+                  setMostrarHerramientas((v) => !v);
+                  setMostrarNotis(false);
+                  openOnly(mostrarHerramientas ? null : "tools");
+                }}
+                variant="navbar"
+                title="Herramientas"
+                aria-expanded={mostrarHerramientas}
+              >
+                Herramientas
+                <IconChevronDown
+                  size={18}
+                  className={`transition-transform ${
+                    mostrarHerramientas ? "rotate-180" : "rotate-0"
+                  }`}
+                />
+              </MainButton>
+
+              {mostrarHerramientas && (
+                <>
+                  {/* Overlay invisible para cerrar el dropdown al hacer clic fuera */}
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setMostrarHerramientas(false)}
+                  />
+                  <div
+                    className={`absolute right-0 mt-2 w-56 rounded-lg shadow-lg z-50 p-2 space-y-1 ${
+                      currentTheme === "light"
+                        ? "bg-fondo border border-texto/15 text-texto"
+                        : "bg-fondo text-texto border border-texto/15"
+                    }`}
+                  >
+                    <MainLinkButton
+                      to="/herramientas"
+                      variant="navbar"
+                      className="!w-full !justify-start !px-3 !py-2"
+                      onClick={() => setMostrarHerramientas(false)}
+                    >
+                      Todas las herramientas
+                    </MainLinkButton>
+
+                    <div className="ml-1 pl-2 mt-1 space-y-1 border-l border-texto/15">
+                      <MainLinkButton
+                        to="/mapa"
+                        variant="navbar"
+                        className="!w-full !justify-start !px-3 !py-2"
+                        onClick={() => setMostrarHerramientas(false)}
+                      >
+                        Mapa
+                      </MainLinkButton>
+
+                      <MainLinkButton
+                        to="/informacion-red"
+                        variant="navbar"
+                        className="!w-full !justify-start !px-3 !py-2"
+                        onClick={() => setMostrarHerramientas(false)}
+                      >
+                        Información de red
+                      </MainLinkButton>
+
+                      <MainLinkButton
+                        to="/test-velocidad"
+                        variant="navbar"
+                        className="!w-full !justify-start !px-3 !py-2"
+                        onClick={() => setMostrarHerramientas(false)}
+                      >
+                        Test de velocidad
+                      </MainLinkButton>
+
+                      <MainLinkButton
+                        to="/analisis-conexion"
+                        variant="navbar"
+                        className="!w-full !justify-start !px-3 !py-2"
+                        onClick={() => setMostrarHerramientas(false)}
+                      >
+                        Análisis de conexión
+                      </MainLinkButton>
+
+                      <MainLinkButton
+                        to="/soporte"
+                        variant="navbar"
+                        className="!w-full !justify-start !px-3 !py-2"
+                        onClick={() => setMostrarHerramientas(false)}
+                      >
+                        Soporte
+                      </MainLinkButton>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Botón de tema - toggle directo */}
+            <MainButton
+              onClick={toggleTheme}
+              variant="navbar"
+              icon={getThemeIcon()}
+              iconSize={26}
+              title={`Cambiar a tema ${
+                currentTheme === "light" ? "oscuro" : "claro"
+              }`}
+            />
+
+            {/* Indicador de carga o botones de autenticación */}
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 border-2 border-texto/30 border-t-acento rounded-full animate-spin"></div>
+                <span className="text-sm text-texto/75">Cargando...</span>
+              </div>
+            ) : !usuario ? (
+              <div className="flex items-center gap-2">
+                {/* Iniciar sesión - mantiene color acento original */}
+                <MainLinkButton
+                  to="/login"
+                  variant={isActive("/login") ? "accent" : "accent"}
+                  aria-current={isActive("/login") ? "page" : undefined}
+                  className={`${loginBase} ${loginDim}`}
+                  onMouseEnter={() => setAuthInteract("login")}
+                  onMouseLeave={() => setAuthInteract(null)}
+                  onFocus={() => setAuthInteract("login")}
+                  onBlur={() => setAuthInteract(null)}
+                  onMouseDown={() => setAuthInteract("login")}
+                  onMouseUp={() => setAuthInteract(null)}
+                >
+                  Iniciar sesión
+                </MainLinkButton>
+
+                {/* Registrarse - contorno e indicador activo por ruta */}
+                <MainLinkButton
+                  to="/register"
+                  variant="navbar"
+                  aria-current={isActive("/register") ? "page" : undefined}
+                  className={`${registerBase} ${
+                    isActive("/register")
+                      ? activeFilled
+                      : `${registerTheme}`
+                  } ${registerDim}`}
+                  onMouseEnter={() => setAuthInteract("register")}
+                  onMouseLeave={() => setAuthInteract(null)}
+                  onFocus={() => setAuthInteract("register")}
+                  onBlur={() => setAuthInteract(null)}
+                  onMouseDown={() => setAuthInteract("register")}
+                  onMouseUp={() => setAuthInteract(null)}
+                >
+                  Registrarse
+                </MainLinkButton>
+              </div>
+            ) : (
+              <>
+                <div className="relative">
+                  <MainButton
+                    onClick={() => {
+                      setMostrarNotis(!mostrarNotis);
+                      openOnly(mostrarNotis ? null : "notis");
+                    }}
+                    variant="navbar"
+                    className={`relative${
+                      notificaciones.length > 0 ? "animate-bounce" : ""
+                    }`}
+                    icon={
+                      notificaciones.length > 0
+                        ? () => (
+                            <IconBellFilled size={26} className="text-acento" />
+                          )
+                        : IconBell
+                    }
+                    iconSize={26}
+                    title="Notificaciones"
+                  >
+                    {notificaciones.length > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full shadow-md">
+                        {notificaciones.length}
+                      </span>
+                    )}
+                  </MainButton>
+
+                  {mostrarNotis && (
+                    <>
+                      {/* Overlay para cerrar el dropdown al hacer clic fuera */}
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setMostrarNotis(false)}
+                      />
+                      <div
+                        className={`absolute right-0 mt-2 w-72 rounded-lg shadow-lg z-50 p-4 space-y-2 ${
+                          currentTheme === "light"
+                            ? "bg-fondo text-texto border border-texto/15 "
+                            : "bg-fondo text-texto border border-texto/15"
+                        }`}
+                      >
+                        {notificaciones.length === 0 ? (
+                          <p className="italic text-center">
+                            No hay notificaciones
+                          </p>
+                        ) : (
+                          notificaciones.map((msg, i) => (
+                            <div
+                              key={i}
+                              className={`border-b pb-2 last:border-b-0 flex justify-between items-start gap-2 ${
+                                currentTheme === "light"
+                                  ? "border-texto/15"
+                                  : "border-texto/15"
+                              }`}
+                            >
+                              <span className="break-words">{msg}</span>
+                              <MainButton
+                                onClick={() =>
+                                  setNotificaciones((prev) =>
+                                    prev.filter((_, idx) => idx !== i)
+                                  )
+                                }
+                                variant="cross"
+                                title="Cerrar"
+                                icon={IconX}
+                                iconSize={20}
+                                className="leading-none p-0"
+                              />
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <MainLinkButton
+                  to="/cuenta"
+                  variant="navbar"
+                  className="!px-4 !py-2"
+                >
+                  Perfil
+                </MainLinkButton>
+
+                <MainButton
+                  onClick={async () => {
+                    await logoutUser();
+                  }}
+                  variant="danger"
+                  className="px-3 py-1 hover:scale-105"
+                >
+                  Cerrar sesión
+                </MainButton>
+              </>
+            )}
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile Top Bar - Solo Logo */}
+      {!esVistaMapa && (
+        <nav
+          className={`lg:hidden px-4 py-4 ${
+            currentTheme === "light"
+              ? "bg-fondo shadow-lg border-b border-texto/15"
+              : "bg-fondo shadow-lg border-b border-texto/15"
+          }`}
+        >
+          <div className="flex justify-center">
+            <Link to="/" className="flex items-center gap-2">
+              <Logo
+                className="h-8"
+                colorPrincipal={getLogoColorPrincipal()}
+                colorAcento={themeData?.acento || "#FB8531"}
+              />
+            </Link>
+          </div>
+        </nav>
+      )}
+    </>
+  );
+};
+
+export default Navbar;
