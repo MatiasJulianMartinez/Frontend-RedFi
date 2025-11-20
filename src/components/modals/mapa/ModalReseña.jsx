@@ -49,6 +49,13 @@ const ModalReseña = ({ reseña, onClose }) => {
     reseña?.user_profiles?.user?.foto_perfil ||
     null;
 
+  // Obtiene el logo del proveedor
+  const proveedorLogo =
+    reseña?.proveedores?.logotipo ||
+    reseña?.proveedor?.logotipo ||
+    reseña?.logotipo ||
+    null;
+
   // Renderiza el sistema de estrellas con calificación específica de la reseña
   const renderStars = (promedio) => {
     const stars = [];
@@ -57,17 +64,17 @@ const ModalReseña = ({ reseña, onClose }) => {
     for (let i = 1; i <= 5; i++) {
       stars.push(
         i <= promedioRedondeado ? (
-          <IconCarambolaFilled key={i} size={24} className="text-yellow-600" />
+          <IconCarambolaFilled key={i} size={22} className="text-yellow-600" />
         ) : (
-          <IconCarambola key={i} size={24} className="text-texto/75" />
+          <IconCarambola key={i} size={22} className="text-texto/75" />
         )
       );
     }
 
     return (
-      <div className="flex items-center gap-1">
+      <div className="flex flex-col items-center justify-center">
         <div className="flex gap-1">{stars}</div>
-        <span className="text-sm text-texto/75 ml-1">
+        <span className="text-xs text-texto/75 mt-1">
           ({promedio ? Number(promedio).toFixed(1) : "0.0"})
         </span>
       </div>
@@ -86,54 +93,67 @@ const ModalReseña = ({ reseña, onClose }) => {
         <IconX size={24} />
       </MainButton>
 
-      {/* Avatar del usuario que escribió la reseña */}
-      <div className="flex justify-center mb-4">
-        <Avatar fotoUrl={fotoUrl} nombre={nombre} size={20} />
-      </div>
+      <div className="flex flex-col items-center gap-5">
+        {/* Avatar y nombre */}
+        <div className="flex flex-col items-center gap-2">
+          <Avatar fotoUrl={fotoUrl} nombre={nombre} size={20} />
+          <MainH2 className="text-center justify-center text-lg">
+            {nombre}
+          </MainH2>
+        </div>
 
-      {/* Nombre del usuario */}
-      <MainH2 className="text-center justify-center">{nombre}</MainH2>
+        {/* --- NUEVO BLOQUE COMPACTO ARRIBA --- */}
+        <div className="w-full max-w-[450px] flex items-center justify-between px-4 py-3 rounded-lg bg-texto/5 border border-texto/15">
+          {/* Proveedor: logo + nombre */}
+          <div className="flex items-center gap-3">
+            {proveedorLogo && (
+              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-md">
+                <img
+                  src={proveedorLogo}
+                  alt={proveedor}
+                  className="w-10 h-10 object-contain rounded-full"
+                />
+              </div>
+            )}
 
-      {/* Calificación con estrellas de la reseña */}
-      <div className="mb-4 flex justify-center">
-        {renderStars(reseña.estrellas)}
-      </div>
+            <div className="flex flex-col leading-tight">
+              <span className="text-xs uppercase tracking-wide text-texto/75">
+                Proveedor
+              </span>
+              <span className="font-bold text-base">{proveedor}</span>
+            </div>
+          </div>
 
-      {/* Badge con información del proveedor evaluado */}
-      <div className="mb-4 flex justify-center">
-        <Badge
-          size="md"
-          bgClass="bg-texto/5"
-          textClass="text-texto"
-          className="border border-texto/15 truncate max-w-[90%] sm:max-w-[420px]"
-          title={proveedor}
-        >
-          Proveedor: <span className="font-bold ml-1">{proveedor}</span>
-        </Badge>
-      </div>
+          {/* Estrellas a la derecha */}
+          <div>{renderStars(reseña.estrellas)}</div>
+        </div>
 
-      {/* Comentario completo de la reseña */}
-      <div className="text-texto bg-texto/5 border border-texto/15 rounded-lg px-4 py-4 mb-6 max-h-[300px] overflow-y-auto">
-        <p className="text-center leading-relaxed whitespace-pre-wrap break-words">
-          {reseña.comentario}
-        </p>
-      </div>
+        {/* Comentario */}
+        <div className="w-full max-w-[450px]">
+          <p className="text-xs uppercase tracking-wide text-texto/75 mb-1">
+            Comentario de la reseña
+          </p>
+          <div className="text-texto bg-texto/5 border border-texto/15 rounded-lg px-4 py-4 max-h-[260px] overflow-y-auto">
+            <p className="leading-relaxed whitespace-pre-wrap break-words text-left">
+              {reseña.comentario}
+            </p>
+          </div>
+        </div>
 
-      {/* Botones de acción */}
-      <div className="flex gap-3">
-        <MainButton
-          type="button"
-          variant="secondary"
-          onClick={onClose}
-          className="flex-1"
-        >
-          Cerrar
-        </MainButton>
+        {/* Botones */}
+        <div className="flex gap-3 w-full max-w-[450px]">
+          <MainButton
+            type="button"
+            variant="secondary"
+            onClick={onClose}
+            className="flex-1"
+          >
+            Cerrar
+          </MainButton>
 
-        <div className="flex-1">
           <MainLinkButton
             to={`/usuarios/${userId}`}
-            className="w-full px-4 py-2"
+            className="flex-1 px-4 py-2"
             icon={IconArrowRight}
             iconSize={16}
             iconPosition="right"

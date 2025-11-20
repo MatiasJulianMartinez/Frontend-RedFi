@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import {
@@ -7,7 +7,6 @@ import {
   IconBellFilled,
   IconHome,
   IconTool,
-  IconUser,
   IconDots,
   IconLogout,
   IconSun,
@@ -19,6 +18,7 @@ import MainButton from "../ui/MainButton";
 import MainLinkButton from "../ui/MainLinkButton";
 import { logoutUser } from "../../services/authService";
 import { useTheme } from "../../context/ThemeContext";
+import { getPerfil } from "../../services/perfil/getPerfil";
 
 const MobileBottomNav = () => {
   const [mostrarNotis, setMostrarNotis] = useState(false);
@@ -29,6 +29,25 @@ const MobileBottomNav = () => {
   const location = useLocation();
 
   const { currentTheme, changeTheme } = useTheme();
+
+  const [perfil, setPerfil] = useState(null);
+
+  useEffect(() => {
+    const cargarPerfil = async () => {
+      if (!usuario) {
+        setPerfil(null);
+        return;
+      }
+      try {
+        const data = await getPerfil();
+        setPerfil(data);
+      } catch (err) {
+        console.error("Error al cargar perfil en MobileBottomNav:", err);
+      }
+    };
+
+    cargarPerfil();
+  }, [usuario]);
 
   const toggleTheme = () => {
     const nextTheme = currentTheme === "light" ? "dark" : "light";
@@ -44,6 +63,28 @@ const MobileBottomNav = () => {
   const mainNavigationItems = [{ path: "/", label: "Inicio", icon: IconHome }];
 
   const isActive = (path) => location.pathname === path;
+
+  const getUserDisplayName = () => {
+    if (!usuario) return "Usuario";
+    return (
+      perfil?.nombre ||
+      usuario.user_metadata?.name ||
+      usuario.email ||
+      "Usuario"
+    );
+  };
+
+  const getUserInitial = () => {
+    const name = getUserDisplayName();
+    return name?.charAt(0)?.toUpperCase() || "U";
+  };
+
+  const getUserAvatarUrl = () => {
+    if (!usuario) return null;
+    return perfil?.foto_url || usuario.user_metadata?.foto_perfil || null;
+  };
+
+  const avatarUrl = getUserAvatarUrl();
 
   return (
     <>
@@ -346,8 +387,20 @@ const MobileBottomNav = () => {
                           isActive("/cuenta") ? "!text-acento" : ""
                         }`}
                       >
-                        <IconUser size={20} />
-                        <span>Perfil</span>
+                        {avatarUrl ? (
+                          <img
+                            src={avatarUrl}
+                            alt={getUserDisplayName()}
+                            className="w-7 h-7 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-7 h-7 rounded-full bg-acento/10 flex items-center justify-center text-xs font-medium text-acento">
+                            {getUserInitial()}
+                          </div>
+                        )}
+                        <span className="ml-2 truncate">
+                          {getUserDisplayName()}
+                        </span>
                       </MainLinkButton>
 
                       {/* Cerrar sesión*/}
@@ -382,7 +435,6 @@ const MobileBottomNav = () => {
                           : "!bg-transparent !text-acento"
                       }`}
                     >
-                      <IconUser size={20} />
                       <span>Iniciar sesión</span>
                     </MainLinkButton>
                   )}
