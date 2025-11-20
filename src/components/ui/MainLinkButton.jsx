@@ -15,7 +15,7 @@ const LinkButton = ({
   iconSize = 24,
   isPremium = false,
   iconPosition = "left",
-  tituloPremium = "", // 🔥 NUEVO: Título de la herramienta Premium
+  tituloPremium = "", 
   ...props
 }) => {
   const { plan } = useRole();
