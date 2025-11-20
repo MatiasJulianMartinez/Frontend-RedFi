@@ -15,6 +15,7 @@ import { obtenerNotificacionesBoletas } from "../../services/boletas/notificacio
 import MainButton from "../ui/MainButton";
 import MainLinkButton from "../ui/MainLinkButton";
 import { logoutUser } from "../../services/authService";
+import { getPerfil } from "../../services/perfil/getPerfil";
 
 export const useNotificaciones = () => {
   const { usuario } = useAuth();
@@ -39,18 +40,37 @@ export const useNotificaciones = () => {
 
 const Navbar = () => {
   const [mostrarNotis, setMostrarNotis] = useState(false);
-
   const [mostrarHerramientas, setMostrarHerramientas] = useState(false);
+  const [mostrarPerfilMenu, setMostrarPerfilMenu] = useState(false);
+
   const { usuario, loading } = useAuth();
   const { notificaciones, setNotificaciones } = useNotificaciones();
-  const { currentTheme, availableThemes, changeTheme, themeData } = useTheme();
+  const { currentTheme, changeTheme, themeData } = useTheme();
   const location = useLocation();
   const esVistaMapa = location.pathname === "/mapa";
 
-  // Función para obtener el color principal del logo según el tema
+  const [perfil, setPerfil] = useState(null);
+
+  useEffect(() => {
+    const cargarPerfil = async () => {
+      if (!usuario) {
+        setPerfil(null);
+        return;
+      }
+      try {
+        const data = await getPerfil();
+        setPerfil(data);
+      } catch (err) {
+        console.error("Error al cargar perfil en Navbar:", err);
+      }
+    };
+
+    cargarPerfil();
+  }, [usuario]);
+
   const getLogoColorPrincipal = () => {
     if (currentTheme === "light") {
-      return "#1f2a40"; // Secundario del tema dark
+      return "#1f2a40";
     }
     return themeData?.texto || "#FFFFFF";
   };
@@ -58,6 +78,7 @@ const Navbar = () => {
   const openOnly = (menu) => {
     setMostrarHerramientas(menu === "tools");
     setMostrarNotis(menu === "notis");
+    setMostrarPerfilMenu(menu === "perfil");
   };
 
   const getThemeIcon = () => {
@@ -68,6 +89,28 @@ const Navbar = () => {
     const nextTheme = currentTheme === "light" ? "dark" : "light";
     changeTheme(nextTheme);
   };
+
+  const getUserDisplayName = () => {
+    if (!usuario) return "Usuario";
+    return (
+      perfil?.nombre ||
+      usuario.user_metadata?.name ||
+      usuario.email ||
+      "Usuario"
+    );
+  };
+
+  const getUserInitial = () => {
+    const name = getUserDisplayName();
+    return name?.charAt(0)?.toUpperCase() || "U";
+  };
+
+  const getUserAvatarUrl = () => {
+    if (!usuario) return null;
+    return perfil?.foto_url || usuario.user_metadata?.foto_perfil || null;
+  };
+
+  const avatarUrl = getUserAvatarUrl();
 
   return (
     <>
@@ -89,16 +132,17 @@ const Navbar = () => {
           </Link>
 
           <div className="flex items-center space-x-4">
-            {/* Navigation Links */}
             <MainLinkButton to="/" variant="navbar" className="!px-4 !py-2">
               Inicio
             </MainLinkButton>
+
             {/* Herramientas (Dropdown) */}
             <div className="relative">
               <MainButton
                 onClick={() => {
                   setMostrarHerramientas((v) => !v);
                   setMostrarNotis(false);
+                  setMostrarPerfilMenu(false);
                   openOnly(mostrarHerramientas ? null : "tools");
                 }}
                 variant="navbar"
@@ -116,10 +160,12 @@ const Navbar = () => {
 
               {mostrarHerramientas && (
                 <>
-                  {/* Overlay invisible para cerrar el dropdown al hacer clic fuera */}
                   <div
                     className="fixed inset-0 z-40"
-                    onClick={() => setMostrarHerramientas(false)}
+                    onClick={() => {
+                      setMostrarHerramientas(false);
+                      openOnly(null);
+                    }}
                   />
                   <div
                     className={`absolute right-0 mt-2 w-56 rounded-lg shadow-lg z-50 p-2 space-y-1 ${
@@ -198,7 +244,6 @@ const Navbar = () => {
               }`}
             />
 
-            {/* Indicador de carga o botones de autenticación */}
             {loading ? (
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 border-2 border-texto/30 border-t-acento rounded-full animate-spin"></div>
@@ -214,10 +259,13 @@ const Navbar = () => {
               </MainLinkButton>
             ) : (
               <>
+                {/* Notificaciones */}
                 <div className="relative">
                   <MainButton
                     onClick={() => {
                       setMostrarNotis(!mostrarNotis);
+                      setMostrarHerramientas(false);
+                      setMostrarPerfilMenu(false);
                       openOnly(mostrarNotis ? null : "notis");
                     }}
                     variant="navbar"
@@ -243,10 +291,12 @@ const Navbar = () => {
 
                   {mostrarNotis && (
                     <>
-                      {/* Overlay para cerrar el dropdown al hacer clic fuera */}
                       <div
                         className="fixed inset-0 z-40"
-                        onClick={() => setMostrarNotis(false)}
+                        onClick={() => {
+                          setMostrarNotis(false);
+                          openOnly(null);
+                        }}
                       />
                       <div
                         className={`absolute right-0 mt-2 w-72 rounded-lg shadow-lg z-50 p-4 space-y-2 ${
@@ -289,13 +339,129 @@ const Navbar = () => {
                     </>
                   )}
                 </div>
-                <MainLinkButton
-                  to="/cuenta"
-                  variant="navbar"
-                  className="!px-4 !py-2"
-                >
-                  Perfil
-                </MainLinkButton>
+
+                {/* Perfil (Dropdown) */}
+                <div className="relative">
+                  <MainButton
+                    onClick={() => {
+                      setMostrarPerfilMenu((v) => !v);
+                      setMostrarHerramientas(false);
+                      setMostrarNotis(false);
+                      openOnly(mostrarPerfilMenu ? null : "perfil");
+                    }}
+                    variant="navbar"
+                    title="Perfil"
+                    aria-expanded={mostrarPerfilMenu}
+                    className="!px-2 !py-1 flex items-center gap-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      {avatarUrl ? (
+                        <img
+                          src={avatarUrl}
+                          alt={getUserDisplayName()}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-acento/10 flex items-center justify-center text-sm font-medium text-acento">
+                          {getUserInitial()}
+                        </div>
+                      )}
+                      <span className="max-w-[140px] truncate text-sm text-left">
+                        {getUserDisplayName()}
+                      </span>
+                    </div>
+                    <IconChevronDown
+                      size={18}
+                      className={`transition-transform ${
+                        mostrarPerfilMenu ? "rotate-180" : "rotate-0"
+                      }`}
+                    />
+                  </MainButton>
+
+                  {mostrarPerfilMenu && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => {
+                          setMostrarPerfilMenu(false);
+                          openOnly(null);
+                        }}
+                      />
+                      <div
+                        className={`absolute right-0 mt-2 w-56 rounded-lg shadow-lg z-50 p-2 space-y-1 ${
+                          currentTheme === "light"
+                            ? "bg-fondo border border-texto/15 text-texto"
+                            : "bg-fondo text-texto border border-texto/15"
+                        }`}
+                      >
+                        <MainLinkButton
+                          to="/cuenta"
+                          variant="navbar"
+                          className="!w-full !justify-start !px-3 !py-2"
+                          onClick={() => setMostrarPerfilMenu(false)}
+                        >
+                          Ver mi perfil
+                        </MainLinkButton>
+
+                        <div className="ml-1 pl-2 mt-1 space-y-1 border-l border-texto/15">
+                          <MainLinkButton
+                            to="/boletas"
+                            variant="navbar"
+                            className="!w-full !justify-start !px-3 !py-2"
+                            onClick={() => setMostrarPerfilMenu(false)}
+                          >
+                            Gestionar boletas
+                          </MainLinkButton>
+
+                          <MainLinkButton
+                            to="/academia"
+                            variant="navbar"
+                            className="!w-full !justify-start !px-3 !py-2"
+                            onClick={() => setMostrarPerfilMenu(false)}
+                          >
+                            Academia Red-Fi
+                          </MainLinkButton>
+
+                          <MainLinkButton
+                            to="/resenas"
+                            variant="navbar"
+                            className="!w-full !justify-start !px-3 !py-2"
+                            onClick={() => setMostrarPerfilMenu(false)}
+                          >
+                            Mis reseñas
+                          </MainLinkButton>
+
+                          <MainLinkButton
+                            to="/editar-perfil"
+                            variant="navbar"
+                            className="!w-full !justify-start !px-3 !py-2"
+                            onClick={() => setMostrarPerfilMenu(false)}
+                          >
+                            Editar perfil
+                          </MainLinkButton>
+
+                          <MainLinkButton
+                            to="/planes"
+                            variant="navbar"
+                            className="!w-full !justify-start !px-3 !py-2"
+                            onClick={() => setMostrarPerfilMenu(false)}
+                          >
+                            Gestionar plan
+                          </MainLinkButton>
+
+                          <MainLinkButton
+                            to="/glosario"
+                            variant="navbar"
+                            className="!w-full !justify-start !px-3 !py-2"
+                            onClick={() => setMostrarPerfilMenu(false)}
+                          >
+                            Glosario de redes
+                          </MainLinkButton>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
 
                 <MainButton
                   onClick={async () => {

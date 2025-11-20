@@ -15,6 +15,7 @@ const LinkButton = ({
   iconSize = 24,
   isPremium = false,
   iconPosition = "left",
+  tituloPremium = "", // 🔥 NUEVO: Título de la herramienta Premium
   ...props
 }) => {
   const { plan } = useRole();
@@ -55,7 +56,8 @@ const LinkButton = ({
   const variants = {
     primary:
       "bg-primario text-white hover:bg-[#336ef0] border-1 border-texto/15",
-    accent: "bg-acento text-[#1a1a1a] hover:bg-[#fca75f] border-1 border-texto/15",
+    accent:
+      "bg-acento text-[#1a1a1a] hover:bg-[#fca75f] border-1 border-texto/15",
     secondary:
       currentTheme === "light"
         ? "bg-texto/15 text-texto hover:bg-texto/30 border-1 border-texto/15" // Light
@@ -137,8 +139,10 @@ const LinkButton = ({
       {/* Overlay de bloqueo para funciones premium en tarjetas */}
       {bloquearAcceso && esCard && (
         <div className="absolute inset-0 backdrop-blur-sm bg-black/20 text-texto border border-texto/15 flex items-center justify-center px-4 text-center font-bold rounded-lg pointer-events-auto z-10">
-          Esta función es exclusiva para el plan{" "}
-          <span className="text-acento ml-1">Premium</span>
+          <span>
+            {tituloPremium || "Esta función"} es solo para usuarios{" "}
+            <span className="text-acento">Premium</span>
+          </span>
         </div>
       )}
     </div>
@@ -146,3 +150,4 @@ const LinkButton = ({
 };
 
 export default LinkButton;
+

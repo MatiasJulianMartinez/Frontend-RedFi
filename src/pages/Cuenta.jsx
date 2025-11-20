@@ -100,7 +100,12 @@ const Cuenta = () => {
         {/* Acciones */}
         <div className="mx-auto mt-8 grid grid-cols-1 sm:grid-cols-2 gap-8">
           <div>
-            <MainLinkButton to="/boletas" variant="card" isPremium={true}>
+            <MainLinkButton
+              to="/boletas"
+              variant="card"
+              isPremium={true}
+              tituloPremium="Gestión de boletas"
+            >
               <MainH3 className="text-center justify-center">
                 Gestionar boletas
               </MainH3>
@@ -112,7 +117,12 @@ const Cuenta = () => {
           </div>
 
           <div>
-            <MainLinkButton to="/academia" variant="card" isPremium={true}>
+            <MainLinkButton
+              to="/academia"
+              variant="card"
+              isPremium={true}
+              tituloPremium="Academia Red-Fi"
+            >
               <MainH3 className="text-center justify-center">
                 Academia Red-Fi
               </MainH3>
@@ -157,7 +167,12 @@ const Cuenta = () => {
           </div>
 
           <div>
-            <MainLinkButton to="/glosario" variant="card" isPremium={true}>
+            <MainLinkButton
+              to="/glosario"
+              variant="card"
+              isPremium={true}
+              tituloPremium="Glosario de redes"
+            >
               <MainH3 className="text-center justify-center">
                 Glosario de redes
               </MainH3>
