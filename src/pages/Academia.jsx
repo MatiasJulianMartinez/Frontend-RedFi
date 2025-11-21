@@ -123,7 +123,8 @@ const AcademyHome = () => {
           </div>
         )}
 
-        <div className="text-center max-w-2xl mx-auto mb-6">
+    
+        <div className="text-center max-w-2xl mx-auto mt-18 mb-6">
           <MainH2 className="text-center justify-center">
             ¿Por qué elegir la Academia Red-Fi?
           </MainH2>
@@ -162,7 +163,9 @@ const AcademyHome = () => {
           </div>
         </div>
 
-        <ReseñasDestacadas />
+        <div className="mt-8">
+          <ReseñasDestacadas />
+        </div>
 
         {/* Botón volver al perfil */}
         <div className="text-center">

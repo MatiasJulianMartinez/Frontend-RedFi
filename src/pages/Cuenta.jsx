@@ -110,8 +110,8 @@ const Cuenta = () => {
                 Gestionar boletas
               </MainH3>
               <p>
-                Visualiza y administra tus boletas, recibe alertas antes del
-                vencimiento y revisa los aumentos mes a mes.
+                Administrá tus boletas, revisá aumentos y recibí alertas antes
+                del vencimiento.
               </p>
             </MainLinkButton>
           </div>
@@ -127,8 +127,8 @@ const Cuenta = () => {
                 Academia Red-Fi
               </MainH3>
               <p>
-                Accede a nuestros mini cursos gratuitos sobre redes, Wi-Fi y
-                aprende a mejorar la calidad de tu conexión desde casa.
+                Accedé a cursos breves y gratuitos sobre redes, Wi-Fi y mejora
+                de conexión.
               </p>
             </MainLinkButton>
           </div>
@@ -139,8 +139,8 @@ const Cuenta = () => {
                 Mis reseñas
               </MainH3>
               <p>
-                Visualiza y administra todas las reseñas que has publicado sobre
-                diferentes proveedores.
+                Consultá, organizá y administrá todas las reseñas que publicaste
+                en Red-Fi.
               </p>
             </MainLinkButton>
           </div>
@@ -151,8 +151,8 @@ const Cuenta = () => {
                 Editar perfil
               </MainH3>
               <p>
-                Actualiza tanto tu foto de perfil como tu nombre completo y
-                otros detalles importantes asociados a tu cuenta de Red-Fi.
+                Actualizá tu foto, nombre y datos personales asociados a tu
+                cuenta.
               </p>
             </MainLinkButton>
           </div>
@@ -162,7 +162,7 @@ const Cuenta = () => {
               <MainH3 className="text-center justify-center">
                 Gestionar plan
               </MainH3>
-              <p>Gestiona tu plan y descubre nuestros beneficios.</p>
+              <p>Consultá tu plan actual y explorá beneficios disponibles.</p>
             </MainLinkButton>
           </div>
 
@@ -176,7 +176,10 @@ const Cuenta = () => {
               <MainH3 className="text-center justify-center">
                 Glosario de redes
               </MainH3>
-              <p>Busca términos como IP, ping, latencia y más.</p>
+              <p>
+                Buscá definiciones rápidas de términos como IP, ping, latencia y
+                más.
+              </p>
             </MainLinkButton>
           </div>
         </div>
@@ -188,8 +191,8 @@ const Cuenta = () => {
                 Gestionar Red-Fi
               </MainH3>
               <p>
-                Accede al panel de administración para gestionar usuarios,
-                proveedores, reseñas y tecnologías.
+                Panel administrativo para gestionar usuarios, proveedores y
+                reseñas.
               </p>
             </MainLinkButton>
           </div>
