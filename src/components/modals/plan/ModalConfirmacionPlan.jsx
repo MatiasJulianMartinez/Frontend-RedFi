@@ -42,7 +42,7 @@ const ModalConfirmacionPlan = ({ usuarioId, nuevoPlan, onClose }) => {
       onClose();
     } catch (error) {
       console.error("Error al cambiar de plan:", error);
-      mostrarError("No se pudo actualizar el plan. Intentalo de nuevo.");
+      mostrarError("No se pudo actualizar el plan. Inténtalo de nuevo.");
     } finally {
       setCargando(false);
     }
