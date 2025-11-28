@@ -50,14 +50,14 @@ const FiltrosZona = ({
         {/* Zona */}
         <Select
           label="Zona"
+          name="zona"
           value={filtros.zona?.id || ""}
           onChange={(id) => {
-            const zona = zonasDisponibles.find(
-              (z) => String(z.id) === String(id)
-            ) || {
-              id: "",
-              nombre: "Todas las zonas",
-            };
+            const zona =
+              zonasDisponibles.find((z) => String(z.id) === String(id)) || {
+                id: "",
+                nombre: "Todas las zonas",
+              };
             setFiltros((prev) => ({ ...prev, zona }));
           }}
           options={zonasDisponibles}
@@ -69,14 +69,14 @@ const FiltrosZona = ({
         {/* Proveedor */}
         <Select
           label="Proveedor"
+          name="proveedor"
           value={filtros.proveedor?.id || ""}
           onChange={(id) => {
-            const proveedor = proveedoresDisponibles.find(
-              (p) => String(p.id) === String(id)
-            ) || {
-              id: "",
-              nombre: "Todos los proveedores",
-            };
+            const proveedor =
+              proveedoresDisponibles.find((p) => String(p.id) === String(id)) || {
+                id: "",
+                nombre: "Todos los proveedores",
+              };
             setFiltros((prev) => ({ ...prev, proveedor }));
           }}
           options={proveedoresDisponibles}
@@ -88,6 +88,7 @@ const FiltrosZona = ({
         {/* Tecnología */}
         <Select
           label="Tecnología"
+          name="tecnologia"
           value={filtros.tecnologia || ""}
           onChange={(t) => setFiltros((prev) => ({ ...prev, tecnologia: t }))}
           options={tecnologiasDisponibles}
@@ -112,7 +113,6 @@ const FiltrosZona = ({
             Todas
           </MainButton>
 
-          {/* Sistema de estrellas interactivo */}
           <div className="flex gap-1 bg-texto/5 font-bold px-3 py-1 rounded-full border border-texto/15">
             {[1, 2, 3, 4, 5].map((v) => {
               const isActive = filtros.valoracionMin >= v;
@@ -127,6 +127,7 @@ const FiltrosZona = ({
                   }
                   className="p-1"
                   title={`${v} estrella${v > 1 ? "s" : ""}`}
+                  aria-label={`Seleccionar ${v} estrella${v > 1 ? "s" : ""}`}
                 >
                   <StarIcon
                     size={24}
